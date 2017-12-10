@@ -9,6 +9,7 @@ import lombok.Getter;
 import net.miginfocom.swing.MigLayout;
 import net.pupunha.liberty.integration.constants.MavenConstants;
 import net.pupunha.liberty.integration.util.ComboBoxItem;
+import net.pupunha.liberty.integration.util.ListItem;
 import net.pupunha.liberty.integration.util.ReadPom;
 import org.apache.commons.lang.StringUtils;
 import org.jdesktop.swingx.JXComboBox;
@@ -36,8 +37,6 @@ public class LooseApplicationPanel extends JPanel {
     @Getter private JButton buttonAddAll = new JButton(">>");
     @Getter private JButton buttonRemove = new JButton("<");
     @Getter private JButton buttonRemoveAll = new JButton("<<");
-//    @Getter private JButton buttonCancel = new JButton("Cancel");
-//    @Getter private JButton buttonOK = new JButton("OK");
 
     private Project project;
 
@@ -60,10 +59,6 @@ public class LooseApplicationPanel extends JPanel {
         this.add(panelButtons);
 
         this.add(new JBScrollPane(listProjectsRight), "sg a, grow, push, wrap");
-
-//        BUTTONS
-//        this.add(buttonCancel, "newline 20px, span, split 2, right");
-//        this.add(buttonOK, "wrap");
 
         setEnableButtons(false);
 
@@ -88,7 +83,7 @@ public class LooseApplicationPanel extends JPanel {
                     List<Path> modulesInPackage = listModulesInPackage();
                     if (modulesInPackage.size() > 0) {
                         setEnableButtons(true);
-                        modulesInPackage.forEach(p -> listModelLeft.addElement(p.getFileName()));
+                        modulesInPackage.forEach(p -> listModelLeft.addElement(new ListItem(p.getFileName().toString(), p)));
                     }
 
                     DefaultListModel listModelRight = (DefaultListModel) listProjectsRight.getModel();

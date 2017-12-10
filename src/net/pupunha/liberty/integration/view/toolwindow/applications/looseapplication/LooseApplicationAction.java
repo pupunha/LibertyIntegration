@@ -6,9 +6,14 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.AsyncResult;
+import lombok.Data;
+import org.jdesktop.swingx.JXComboBox;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.nio.file.Path;
+import java.util.List;
 
 public class LooseApplicationAction extends AnAction {
 
@@ -24,38 +29,14 @@ public class LooseApplicationAction extends AnAction {
             dialog.setTitle("Create Loose Application EAR");
             dialog.show();
 
-
-//            DialogBuilder builder = new DialogBuilder(project);
-//            LooseApplicationPanel panel = new LooseApplicationPanel(project);
-//
-//            builder.setTitle("Create Loose Application EAR");
-//            builder.setCenterPanel(panel);
-//            builder.removeAllActions();
-
-//            DialogWrapperDialog
-
-//            builder.dispose();addCancelAction()dDisposable();
-//            panel.getButtonCancel().addActionListener(e -> {
-//                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>");
-//                builder.addCancelAction();
-//            });
-//            panel.getButtonOK().addActionListener(e -> {
-//
-//            });
-
-//            builder.show();
+            if (dialog.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+                Parameter parameter = dialog.getParameters();
+                LogLooseApplicationDialog logDialog = new LogLooseApplicationDialog(project, parameter);
+                logDialog.show();
 
 
-//            builder.get
-//            builder.addCancelAction();
-//            builder.addOkAction();
-//            builder.showNotModal();
-//            boolean isOk = builder.show() == DialogWrapper.OK_EXIT_CODE;
-//            if (isOk) {
-//
-//            }
+            }
         } catch (Exception e) {
-            e.printStackTrace();
             Messages.showMessageDialog(project, e.getMessage(), "Error", Messages.getErrorIcon());
         }
     }

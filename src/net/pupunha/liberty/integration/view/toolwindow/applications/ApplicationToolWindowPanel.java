@@ -67,8 +67,6 @@ import static net.pupunha.liberty.integration.constants.ProfileConstants.SERVER_
 public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements Disposable {
 
     public static final String REFRESH = "Refresh";
-//    public static final String ADD_APPLICATION = "Add Application";
-//    public static final String CLEAR_LOGS = "Remove Application";
     public static final String CLEAR_LOGS = "Clear Logs";
     private static final String CONFIGURATION = "Configuration";
     private static final String RESTART_APPLICATION = "Restart Application";
@@ -297,18 +295,6 @@ public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements
             } catch (LibertyConfigurationException | IOException | PathNotFoundException e) {
                 Messages.showMessageDialog(project, e.getMessage(), "Error", Messages.getErrorIcon());
             }
-        }
-    }
-
-    private class RemoveToolBar extends AnAction {
-
-        public RemoveToolBar(@Nullable String text, @Nullable String description, @Nullable Icon icon) {
-            super(text, description, icon);
-        }
-
-        @Override
-        public void actionPerformed(AnActionEvent anActionEvent) {
-
         }
     }
 
