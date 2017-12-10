@@ -1,0 +1,42 @@
+<idea-plugin>
+  <id>net.pupunha.liberty.integration</id>
+  <name>Liberty Integration</name>
+  <version>1.0</version>
+  <vendor email="will.lobato@gmail.com" url="https://github.com/pupunha/LibertyIntegration">Will Lobato</vendor>
+
+  <description><![CDATA[
+      Plugin to improve application development with IBM Liberty Profile<br>
+    ]]></description>
+
+  <change-notes><![CDATA[
+      Features<br>
+      <em>Monitors application status remotely</em>
+      <em>ComboBox with button to perform application restart</em>
+    ]]>
+  </change-notes>
+
+  <idea-version since-build="145.0"/>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <toolWindow id="Server Status" secondary="true" icon="/earth-16.png" anchor="bottom" factoryClass="net.pupunha.liberty.integration.view.toolwindow.ServerStatusToolWindow"/>
+    <toolWindow id="Applications" secondary="true" icon="/application-16.png" anchor="right" factoryClass="net.pupunha.liberty.integration.view.toolwindow.applications.ApplicationToolWindow"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+  </extensions>
+
+  <actions>
+    <!-- Add your actions here -->
+  </actions>
+
+  <project-components>
+    <component>
+      <implementation-class>net.pupunha.liberty.integration.view.toolwindow.applications.toolbar.application.SelectApplicationComponent</implementation-class>
+    </component>
+    <component>
+      <implementation-class>net.pupunha.liberty.integration.view.toolwindow.applications.toolbar.application.ToolBarComponent</implementation-class>
+    </component>
+  </project-components>
+
+</idea-plugin>
