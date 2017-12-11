@@ -28,6 +28,7 @@ public class LooseApplicationAction extends AnAction {
                 LogLooseApplicationDialog logDialog = new LogLooseApplicationDialog(project, parameter);
                 logDialog.setModal(false);
                 logDialog.show();
+
             }
         } catch (Exception e) {
             Messages.showMessageDialog(project, e.getMessage(), "Error", Messages.getErrorIcon());

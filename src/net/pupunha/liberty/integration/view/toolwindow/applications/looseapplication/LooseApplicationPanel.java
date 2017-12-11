@@ -4,6 +4,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.module.StdModuleTypes;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBScrollPane;
 import lombok.Getter;
 import net.miginfocom.swing.MigLayout;
@@ -18,6 +19,7 @@ import org.jdesktop.swingx.JXList;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -76,18 +78,22 @@ public class LooseApplicationPanel extends JPanel {
                 ComboBoxItem selectedItem = (ComboBoxItem) comboEnterpriseApplication.getSelectedItem();
                 assert selectedItem != null;
                 if (StringUtils.isNotEmpty(selectedItem.getValue())) {
+                    try {
+                        DefaultListModel listModelLeft = (DefaultListModel) listProjectsLeft.getModel();
+                        listModelLeft.removeAllElements();
 
-                    DefaultListModel listModelLeft = (DefaultListModel) listProjectsLeft.getModel();
-                    listModelLeft.removeAllElements();
-
-                    List<Path> modulesInPackage = listModulesInPackage();
-                    if (modulesInPackage.size() > 0) {
-                        setEnableButtons(true);
-                        modulesInPackage.forEach(p -> listModelLeft.addElement(new ListItem(p.getFileName().toString(), p)));
+                        LooseApplicationGenerate generate = new LooseApplicationGenerate(project, null);
+                        generate.listDependenciesInPackage(Paths.get(selectedItem.getValue()), listModulesInPackage());
+                        List<Path> modulesInPackage = listModulesInPackage();
+                        if (modulesInPackage.size() > 0) {
+                            setEnableButtons(true);
+                            modulesInPackage.forEach(p -> listModelLeft.addElement(new ListItem(p.getFileName().toString(), p)));
+                        }
+                        DefaultListModel listModelRight = (DefaultListModel) listProjectsRight.getModel();
+                        listModelRight.removeAllElements();
+                    } catch (Exception ex) {
+                        Messages.showMessageDialog(project, ex.getMessage(), "Error", Messages.getErrorIcon());
                     }
-
-                    DefaultListModel listModelRight = (DefaultListModel) listProjectsRight.getModel();
-                    listModelRight.removeAllElements();
 
                 } else {
                     DefaultListModel listModelLeft = (DefaultListModel) listProjectsLeft.getModel();
@@ -147,7 +153,6 @@ public class LooseApplicationPanel extends JPanel {
 
     public List<Path> listModulesInPackage() {
         Collection<Module> modulesOfType = ModuleUtil.getModulesOfType(project, StdModuleTypes.JAVA);
-
         List<Path> collect = modulesOfType.stream()
                 .map(this::convertToPath)
                 .map(Path::getParent)
@@ -156,9 +161,6 @@ public class LooseApplicationPanel extends JPanel {
                 .filter(p -> ReadPom.getPackaging(p).equals(MavenConstants.JAR))
                 .map(Path::getParent)
                 .collect(Collectors.toList());
-
-        collect.add(Paths.get("other-jar"));
-
         return collect;
     }
 

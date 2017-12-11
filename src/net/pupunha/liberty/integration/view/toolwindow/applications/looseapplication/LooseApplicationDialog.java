@@ -53,6 +53,8 @@ public class LooseApplicationDialog extends DialogWrapper {
             modules.add(item.getValue());
         }
         params.setModules(modules);
+
+        params.setModulesInPackage(panel.listModulesInPackage());
         return params;
     }
 

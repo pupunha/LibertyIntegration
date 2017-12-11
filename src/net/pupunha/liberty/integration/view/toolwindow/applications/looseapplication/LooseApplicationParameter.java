@@ -11,4 +11,6 @@ public class LooseApplicationParameter {
     private Path projectEAR;
     private List<Path> modules;
 
+    private List<Path> modulesInPackage;
+
 }
