@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 @Data
-public class Parameter {
+public class LooseApplicationParameter {
 
     private Path projectEAR;
     private List<Path> modules;

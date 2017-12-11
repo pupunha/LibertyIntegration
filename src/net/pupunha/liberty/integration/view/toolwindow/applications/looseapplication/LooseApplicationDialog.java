@@ -40,8 +40,8 @@ public class LooseApplicationDialog extends DialogWrapper {
         return null;
     }
 
-    public Parameter getParameters() {
-        Parameter params = new Parameter();
+    public LooseApplicationParameter getParameters() {
+        LooseApplicationParameter params = new LooseApplicationParameter();
         ComboBoxItem selectedItem = (ComboBoxItem) panel.getComboEnterpriseApplication().getSelectedItem();
         String projectEAR = Optional.ofNullable(selectedItem).map(ComboBoxItem::getValue).orElse(null);
         params.setProjectEAR(Paths.get(projectEAR));

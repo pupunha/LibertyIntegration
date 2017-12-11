@@ -275,20 +275,23 @@ public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements
         @Override
         public void actionPerformed(AnActionEvent event) {
             try {
-                LibertyConfiguration libertyConfiguration = repository.load();
-                Path absolutePathLogs = libertyConfiguration.getAbsolutePathLogs();
+                int confirmation = Messages.showOkCancelDialog(event.getProject(), "Do you want to confirm log cleanup?", "Confirmation", Messages.getQuestionIcon());
+                if (confirmation == Messages.OK) {
+                    LibertyConfiguration libertyConfiguration = repository.load();
+                    Path absolutePathLogs = libertyConfiguration.getAbsolutePathLogs();
 
-                DialogBuilder dialog = createDialog(event.getProject());
-                dialog.showNotModal();
+                    DialogBuilder dialog = createDialog(event.getProject());
+                    dialog.showNotModal();
 
-                try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(absolutePathLogs)) {
-                    for (Path path : directoryStream) {
-                        if (!path.toString().endsWith(LOGS_STATE)) {
-                            Files.walk(path, FileVisitOption.FOLLOW_LINKS)
-                                    .sorted(Comparator.reverseOrder())
-                                    .map(Path::toFile)
-                                    .peek(this::insertText)
-                                    .forEach(File::delete);
+                    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(absolutePathLogs)) {
+                        for (Path path : directoryStream) {
+                            if (!path.toString().endsWith(LOGS_STATE)) {
+                                Files.walk(path, FileVisitOption.FOLLOW_LINKS)
+                                        .sorted(Comparator.reverseOrder())
+                                        .map(Path::toFile)
+                                        .peek(this::insertText)
+                                        .forEach(File::delete);
+                            }
                         }
                     }
                 }

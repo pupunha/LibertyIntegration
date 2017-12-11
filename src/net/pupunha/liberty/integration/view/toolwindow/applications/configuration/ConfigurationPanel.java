@@ -44,6 +44,9 @@ public class ConfigurationPanel extends JPanel {
         super(new MigLayout());
         this.project = project;
 
+//        txtPackCurrent.setEditable(false);
+//        txtWlpUserDirectory.setEditable(false);
+
         add(new JLabel("Package Current"));
         add(txtPackCurrent, "growx");
         add(buttonChoosePackage, "grow, wrap");
@@ -53,10 +56,15 @@ public class ConfigurationPanel extends JPanel {
         add(new JLabel("Server Name:"));
         add(comboServerName, "growx, wrap");
 
+        init();
+
         buttonChoosePackage.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setAcceptAllFileFilterUsed(false);
+            if (StringUtils.isNotEmpty(txtPackCurrent.getText())) {
+                fileChooser.setCurrentDirectory(Paths.get(txtPackCurrent.getText()).toFile());
+            }
             int returnVal = fileChooser.showOpenDialog(getParent());
             if(returnVal == JFileChooser.APPROVE_OPTION) {
                 txtPackCurrent.setText(fileChooser.getSelectedFile().toString().replace("\\", "/"));
@@ -67,6 +75,9 @@ public class ConfigurationPanel extends JPanel {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setAcceptAllFileFilterUsed(false);
+            if (StringUtils.isNotEmpty(txtWlpUserDirectory.getText())) {
+                fileChooser.setCurrentDirectory(Paths.get(txtWlpUserDirectory.getText()).toFile());
+            }
             int returnVal = fileChooser.showOpenDialog(getParent());
             if(returnVal == JFileChooser.APPROVE_OPTION) {
                 txtWlpUserDirectory.setText(fileChooser.getSelectedFile().toString().replace("\\", "/"));
@@ -86,7 +97,6 @@ public class ConfigurationPanel extends JPanel {
             }
         });
 
-        init();
     }
 
     private void init() throws Exception {
@@ -104,11 +114,11 @@ public class ConfigurationPanel extends JPanel {
         if (StringUtils.isNotEmpty(configuration.getServerName())) {
             Map<String, File> applications = configuration.getApplications();
             applicationComponent.setApplications(applications);
-//            if (MapUtils.isEmpty(applications)) {
-                configuration.setAppComboSelected("");
-                repository.store(configuration);
-                applicationComponent.clearSelectApplication();
-//            }
+
+            configuration.setAppComboSelected("");
+            repository.store(configuration);
+            applicationComponent.clearSelectApplication();
+
         } else {
             configuration.setAppComboSelected("");
             repository.store(configuration);
