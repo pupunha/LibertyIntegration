@@ -18,7 +18,7 @@
   <idea-version since-build="145.0"/>
 
   <extensions defaultExtensionNs="com.intellij">
-    <toolWindow id="Server Status" secondary="true" icon="/earth-16.png" anchor="bottom" factoryClass="net.pupunha.liberty.integration.view.toolwindow.ServerStatusToolWindow"/>
+    <!--<toolWindow id="Server Status" secondary="true" icon="/earth-16.png" anchor="bottom" factoryClass="net.pupunha.liberty.integration.view.toolwindow.ServerStatusToolWindow"/>-->
     <toolWindow id="Applications" secondary="true" icon="/application-16.png" anchor="right" factoryClass="net.pupunha.liberty.integration.view.toolwindow.applications.ApplicationToolWindow"/>
   </extensions>
 

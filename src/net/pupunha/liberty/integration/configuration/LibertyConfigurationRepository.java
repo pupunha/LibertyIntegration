@@ -1,14 +1,10 @@
 package net.pupunha.liberty.integration.configuration;
 
-import com.intellij.openapi.ui.Messages;
 import lombok.Getter;
 import lombok.Setter;
 import net.pupunha.liberty.integration.annotations.Property;
 import net.pupunha.liberty.integration.exception.LibertyConfigurationException;
-import net.pupunha.liberty.integration.exception.PluginNotConfiguratedException;
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

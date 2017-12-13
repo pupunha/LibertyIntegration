@@ -44,7 +44,9 @@ public class LooseApplicationDialog extends DialogWrapper {
         LooseApplicationParameter params = new LooseApplicationParameter();
         ComboBoxItem selectedItem = (ComboBoxItem) panel.getComboEnterpriseApplication().getSelectedItem();
         String projectEAR = Optional.ofNullable(selectedItem).map(ComboBoxItem::getValue).orElse(null);
-        params.setProjectEAR(Paths.get(projectEAR));
+        if (projectEAR != null) {
+            params.setProjectEAR(Paths.get(projectEAR));
+        }
 
         List<Path> modules = new ArrayList<>();
         ListModel model = panel.getListProjectsRight().getModel();

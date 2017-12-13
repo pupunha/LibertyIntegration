@@ -81,10 +81,10 @@ public class LooseApplicationPanel extends JPanel {
                     try {
                         DefaultListModel listModelLeft = (DefaultListModel) listProjectsLeft.getModel();
                         listModelLeft.removeAllElements();
-
-                        LooseApplicationGenerate generate = new LooseApplicationGenerate(project, null);
-                        generate.listDependenciesInPackage(Paths.get(selectedItem.getValue()), listModulesInPackage());
-                        List<Path> modulesInPackage = listModulesInPackage();
+                        LooseApplicationParameter parameter = new LooseApplicationParameter();
+                        parameter.setProjectEAR(Paths.get(selectedItem.getValue()));
+                        LooseApplicationGenerate generate = new LooseApplicationGenerate(project, parameter, null);
+                        List<Path> modulesInPackage = generate.listDependenciesInPackage(Paths.get(selectedItem.getValue()), listModulesInPackage());
                         if (modulesInPackage.size() > 0) {
                             setEnableButtons(true);
                             modulesInPackage.forEach(p -> listModelLeft.addElement(new ListItem(p.getFileName().toString(), p)));

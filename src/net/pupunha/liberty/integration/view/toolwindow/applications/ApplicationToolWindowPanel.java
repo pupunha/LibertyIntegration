@@ -128,7 +128,7 @@ public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements
                 log.info("Path Apps: "+dirApps);
                 this.tree.addMouseListener(new MouseAdapterTree(dirApps));
 
-                this.serverXml = Paths.get(libertyConfiguration.getAbsolutePathServerName().toString(), SERVER_XML);
+                this.serverXml = libertyConfiguration.getAbsolutePathServerXml();
                 log.info("Path server.xml: "+serverXml);
                 this.manipulationLibertyServer = new ManipulationLibertyServer(serverXml.toString());
 
@@ -242,6 +242,7 @@ public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements
 
     private class ClearLogsAction extends AnAction {
 
+        private JTextPane textPane;
         private StyledDocument doc;
 
         public ClearLogsAction(@Nullable String text, @Nullable String description, @Nullable Icon icon) {
@@ -251,6 +252,7 @@ public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements
         public void insertText(File file) {
             try {
                 doc.insertString(doc.getLength(), file.toString().concat("\n"), null);
+                textPane.setCaretPosition(doc.getLength());
             } catch (BadLocationException e) {
                 Messages.showMessageDialog(project, e.getMessage(), "Error", Messages.getErrorIcon());
             }
@@ -258,8 +260,9 @@ public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements
 
         public DialogBuilder createDialog(Project project) {
             DialogBuilder builder = new DialogBuilder(project);
-            JTextPane textPane = new JTextPane();
-            textPane.setEnabled(false);
+            textPane = new JTextPane();
+            textPane.setEditable(false);
+            textPane.setFont(UIManager.getFont("Label.font"));
             doc = textPane.getStyledDocument();
 
             JScrollPane editorScrollPane = new JBScrollPane(textPane);
@@ -285,13 +288,12 @@ public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements
 
                     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(absolutePathLogs)) {
                         for (Path path : directoryStream) {
-                            if (!path.toString().endsWith(LOGS_STATE)) {
-                                Files.walk(path, FileVisitOption.FOLLOW_LINKS)
-                                        .sorted(Comparator.reverseOrder())
-                                        .map(Path::toFile)
-                                        .peek(this::insertText)
-                                        .forEach(File::delete);
-                            }
+                            Files.walk(path, FileVisitOption.FOLLOW_LINKS)
+                                    .sorted(Comparator.reverseOrder())
+                                    .filter(p -> !p.toString().endsWith(LOGS_STATE))
+                                    .map(Path::toFile)
+                                    .peek(this::insertText)
+                                    .forEach(File::delete);
                         }
                     }
                 }

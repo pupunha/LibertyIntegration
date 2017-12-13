@@ -5,6 +5,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
+import net.pupunha.liberty.integration.view.toolwindow.applications.toolbar.application.ToolBarComponent;
 import org.jetbrains.annotations.NotNull;
 
 public class ApplicationToolWindow implements ToolWindowFactory {
@@ -20,5 +21,6 @@ public class ApplicationToolWindow implements ToolWindowFactory {
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         Content content = contentFactory.createContent(panel, "", false);
         toolWindow.getContentManager().addContent(content);
+        ToolBarComponent.getManager(project).executeRefresh();
     }
 }

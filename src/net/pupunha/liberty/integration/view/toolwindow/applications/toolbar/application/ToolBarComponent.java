@@ -1,6 +1,5 @@
 package net.pupunha.liberty.integration.view.toolwindow.applications.toolbar.application;
 
-import com.intellij.ide.actions.RefreshAction;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
 import lombok.Getter;
