@@ -29,6 +29,10 @@ public class LooseApplicationAction extends AnAction {
                 logDialog.setModal(false);
                 logDialog.show();
 
+                if (logDialog.getExitCode() == DialogWrapper.CANCEL_EXIT_CODE) {
+                    logDialog.getWorker().cancel(true);
+                }
+
             }
         } catch (Exception e) {
             Messages.showMessageDialog(project, e.getMessage(), "Error", Messages.getErrorIcon());

@@ -338,148 +338,6 @@ public class LooseApplicationGenerate {
         }
     }
 
-//    public static void main(String[] args ) throws Exception {
-//
-//        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-//        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-//        Document doc = docBuilder.newDocument();
-//
-//        List<Path> allPackProjectsStream = Files.walk(Paths.get(PACK_LOCAL))
-//                .filter(p -> p.endsWith(MavenConstants.POM_XML))
-//                .map(Path::getParent).collect(Collectors.toList());
-//
-//        Path packEAR = Files.walk(Paths.get(PACK_LOCAL, PROJECT_EAR))
-//                .filter(p -> p.toString()
-//                        .endsWith(".ear"))
-//                .findFirst().orElse(null);
-//        if (packEAR != null) {
-//            String fileEAR = packEAR.getFileName().toString();
-//            final int lastPeriodPos = fileEAR.lastIndexOf('.');
-//            String nameEARWithoutExtension = fileEAR.substring(0, lastPeriodPos);
-//
-//            Path folderEAR = Paths.get(PACK_LOCAL, PROJECT_EAR, "/target", nameEARWithoutExtension);
-//            if (folderEAR != null) {
-//
-//                Element archiveEAR = doc.createElement(ARCHIVE);
-//                doc.appendChild(archiveEAR);
-//
-//                DirectoryStream<Path> streamDir = Files.newDirectoryStream(folderEAR, f -> f.toFile().isDirectory());
-//                for (Path entry : streamDir) {
-//                    Element dir = doc.createElement(DIR);
-//                    dir.setAttribute(TARGET_IN_ARCHIVE, "/" + entry.getFileName().toString());
-//                    dir.setAttribute(SOURCE_ON_DISK, entry.toString().replace("\\","/"));
-//                    archiveEAR.appendChild(dir);
-//                }
-////                DirectoryStream<Path> streamFile = Files.newDirectoryStream(folderEAR, f -> f.toFile().isDirectory());
-////                for (Path entry : streamDir) {
-////                    Element dir = doc.createElement(DIR);
-////                    dir.setAttribute(TARGET_IN_ARCHIVE, "/" + entry.getFileName().toString());
-////                    dir.setAttribute(SOURCE_ON_DISK, entry.toString().replace("\\","/"));
-////                    archiveEAR.appendChild(dir);
-////                }
-//
-//                DirectoryStream<Path> streamArchiveWAR = Files.newDirectoryStream(folderEAR, f -> f.toString().endsWith(".war"));
-//                for (Path entry : streamArchiveWAR) {
-//
-//                    Element archiveWAR = doc.createElement(ARCHIVE);
-//                    archiveWAR.setAttribute(TARGET_IN_ARCHIVE, "/" + entry.getFileName().toString());
-//                    archiveEAR.appendChild(archiveWAR);
-//
-//                    Pattern r = Pattern.compile(PATTERN_WAR);
-//                    Matcher m = r.matcher(entry.getFileName().toString());
-//                    if (m.find()) {
-//                        String projectWarName = m.group(1);
-//                        Path pathProjectEAR = Paths.get(PACK_LOCAL, PROJECT_EAR);
-//                        String projectWARTarget = entry.getFileName().toString().substring(0, entry.getFileName().toString().lastIndexOf('.'));
-//
-//                        /**TO POLICY-TOOL**/
-//                        Path pathProjectWAR = Files.walk(pathProjectEAR.getParent()).filter(p -> p.toString().endsWith(projectWarName)).distinct().findFirst().orElse(null);
-//                        Path pathProjectWithWebAppDirWAR = Paths.get(pathProjectWAR.toString(), "/src/main/webapp/WEB-INF");
-//                        Path pathProjectTargetWAR = Paths.get(pathProjectWAR.toString(), "/target", projectWARTarget);
-//                        Path pathProjectTargetClassesWAR = Paths.get(pathProjectWAR.toString(), "/target/classes");
-//
-//                        DirectoryStream<Path> streamContentWAR = Files.newDirectoryStream(pathProjectTargetWAR, f -> f.toFile().isDirectory());
-//                        for (Path entryContentWAR : streamContentWAR) {
-//                            if (entryContentWAR.endsWith(META_INF)) {
-//
-//                                Element dir = doc.createElement(DIR);
-//                                dir.setAttribute(TARGET_IN_ARCHIVE, "/" + META_INF);
-//                                dir.setAttribute(SOURCE_ON_DISK, entryContentWAR.toString().replace("\\", "/"));
-//                                archiveWAR.appendChild(dir);
-//
-//                            } else if (entryContentWAR.endsWith(WEB_INF)) {
-//                                DirectoryStream<Path> streamContentWebInfWAR = Files.newDirectoryStream(entryContentWAR, f -> f.toFile().isDirectory());
-//                                for (Path entryContentWebInfWAR : streamContentWebInfWAR) {
-//                                    if (entryContentWebInfWAR.endsWith(LIB)) {
-//                                        LooseApplicationGenerate generate = new LooseApplicationGenerate(null, null);
-//                                        generate.createDependencies(doc, archiveWAR, entryContentWebInfWAR.toString(), null, allPackProjectsStream);
-//                                    } else {
-//                                        Element dir = doc.createElement(DIR);
-//                                        dir.setAttribute(TARGET_IN_ARCHIVE, "/" + WEB_INF + "/" + entryContentWebInfWAR.getFileName());
-//                                        Path pathInWebAppDir = Paths.get(pathProjectWithWebAppDirWAR.toString(), entryContentWebInfWAR.getFileName().toString());
-//                                        if (Files.exists(pathInWebAppDir)) {
-//                                            dir.setAttribute(SOURCE_ON_DISK, pathInWebAppDir.toString().replace("\\", "/"));
-//                                            archiveWAR.appendChild(dir);
-//                                        } else {
-//                                            if (CLASSES.equals(entryContentWebInfWAR.getFileName().toString())) {
-//                                                dir.setAttribute(SOURCE_ON_DISK, pathProjectTargetClassesWAR.toString().replace("\\", "/"));
-//                                            } else {
-//                                                dir.setAttribute(SOURCE_ON_DISK, entryContentWebInfWAR.toString().replace("\\", "/"));
-//                                            }
-//                                            archiveWAR.appendChild(dir);
-//                                        }
-//                                    }
-//                                }
-//
-//                                DirectoryStream<Path> streamContentWebInfFileWAR = Files.newDirectoryStream(entryContentWAR, f -> !f.toFile().isDirectory());
-//                                for (Path entryContentWebInfFileWAR : streamContentWebInfFileWAR) {
-//                                    Element file = doc.createElement(FILE);
-//                                    file.setAttribute(TARGET_IN_ARCHIVE, "/" + WEB_INF + "/" + entryContentWebInfFileWAR.getFileName());
-//                                    Path pathInWebAppFile = Paths.get(pathProjectWithWebAppDirWAR.toString(), entryContentWebInfFileWAR.getFileName().toString());
-//                                    System.out.println(pathInWebAppFile);
-//                                    if (Files.exists(pathInWebAppFile)) {
-//                                        file.setAttribute(SOURCE_ON_DISK, pathInWebAppFile.toString().replace("\\", "/"));
-//                                        archiveWAR.appendChild(file);
-//                                    } else {
-//                                        file.setAttribute(SOURCE_ON_DISK, entryContentWebInfFileWAR.toString().replace("\\", "/"));
-//                                        archiveWAR.appendChild(file);
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-
-//            LibertyConfigurationRepository repository = new LibertyConfigurationRepository();
-//            LibertyConfiguration configuration = repository.load();
-//            Path absolutePathApps = configuration.getAbsolutePathApps();
-//
-//            Path pathEAR = getPathFileLooseApplication(absolutePathApps, packEAR);
-//            FileOutputStream outputStream = new FileOutputStream(pathEAR.toFile());
-
-//            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-//            Transformer transformer = transformerFactory.newTransformer();
-//            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-//            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-//            DOMSource source = new DOMSource(doc);
-//
-//            StreamResult result = new StreamResult(outputStream);
-//            transformer.transform(source, result);
-//            outputStream.close();
-//
-//            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-//            Transformer transformer = transformerFactory.newTransformer();
-//            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-//            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-//            DOMSource source = new DOMSource(doc);
-//
-//            StreamResult result = new StreamResult(System.out);
-//            transformer.transform(source, result);
-//        }
-//
-//    }
-
     public static String findRepositoryLocal() throws Exception {
         String home = System.getProperty("user.home");
         Path pathMavenSettings = Paths.get(home, "/.m2/settings.xml");
@@ -490,7 +348,8 @@ public class LooseApplicationGenerate {
         XPath xPath = XPathFactory.newInstance().newXPath();
         String expression = "//localRepository";
         Node evaluate = (Node) xPath.compile(expression).evaluate(doc, XPathConstants.NODE);
-        return evaluate.getTextContent();
+        String textContent = evaluate.getTextContent();
+        return textContent;
     }
 
     private static boolean isDirEmpty(final Path directory) throws IOException {

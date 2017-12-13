@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBScrollPane;
+import lombok.Getter;
 import net.miginfocom.swing.MigLayout;
 import net.pupunha.liberty.integration.configuration.LibertyConfiguration;
 import net.pupunha.liberty.integration.configuration.LibertyConfigurationRepository;
@@ -27,6 +28,8 @@ public class LogLooseApplicationDialog extends DialogWrapper {
     private Project project;
     private LooseApplicationParameter parameter;
     private JTextPane textPane = new JTextPane();
+
+    @Getter
     private SwingWorker worker;
 
     public LogLooseApplicationDialog(@Nullable Project project, LooseApplicationParameter parameter) {
@@ -37,6 +40,7 @@ public class LogLooseApplicationDialog extends DialogWrapper {
         this.textPane.setFont(UIManager.getFont("Label.font"));
 
         this.init();
+        this.myOKAction.setEnabled(false);
 
         this.worker = new SwingWorker<Boolean, Void>() {
             @Override
@@ -70,6 +74,7 @@ public class LogLooseApplicationDialog extends DialogWrapper {
 
                     ToolBarComponent.getManager(project).executeRefresh();
 
+                    myOKAction.setEnabled(true);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

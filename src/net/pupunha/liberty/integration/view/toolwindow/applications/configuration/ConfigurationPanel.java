@@ -109,7 +109,7 @@ public class ConfigurationPanel extends JPanel {
 
     }
 
-    private void refreshComboApplication(LibertyConfiguration configuration) throws PathNotFoundException, LibertyConfigurationException {
+    public void refreshComboApplication(LibertyConfiguration configuration) throws PathNotFoundException, LibertyConfigurationException {
         SelectApplicationComponent applicationComponent = SelectApplicationComponent.getManager(project);
         if (StringUtils.isNotEmpty(configuration.getServerName())) {
             Map<String, File> applications = configuration.getApplications();

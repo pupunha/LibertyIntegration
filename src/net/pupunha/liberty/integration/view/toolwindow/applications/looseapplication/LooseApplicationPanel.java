@@ -64,6 +64,8 @@ public class LooseApplicationPanel extends JPanel {
 
         setEnableButtons(false);
 
+        this.setPreferredSize(new Dimension(500, 300));
+
         comboEnterpriseApplication.setModel(comboBoxModel);
         comboBoxModel.addElement(new ComboBoxItem(SELECT));
         if (project != null) {
@@ -140,7 +142,6 @@ public class LooseApplicationPanel extends JPanel {
             }
             listModelRight.removeAllElements();
         });
-
 
     }
 
