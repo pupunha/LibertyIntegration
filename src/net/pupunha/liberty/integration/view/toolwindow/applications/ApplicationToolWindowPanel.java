@@ -37,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -163,15 +164,20 @@ public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements
             if (Files.exists(locationTreeNode.resolveFullLocation())) {
                 DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder builder = builderFactory.newDocumentBuilder();
-                Document xmlDocument = builder.parse(locationTreeNode.resolveFullLocation().toFile());
-                XPath xPath = XPathFactory.newInstance().newXPath();
-                String expression = "/archive/archive/archive";
-                NodeList nodeList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
-                for (int i=0; i<nodeList.getLength(); i++) {
-                    Node item = nodeList.item(i);
-                    String targetInArchive = item.getAttributes().getNamedItem(TARGET_IN_ARCHIVE).getNodeValue();
-                    Path fileName = Paths.get(targetInArchive).getFileName();
-                    locationTreeNode.add(new DefaultMutableTreeNode(fileName));
+
+                try {
+                    Document xmlDocument = builder.parse(locationTreeNode.resolveFullLocation().toFile());
+                    XPath xPath = XPathFactory.newInstance().newXPath();
+                    String expression = "/archive/archive/archive";
+                    NodeList nodeList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
+                    for (int i=0; i<nodeList.getLength(); i++) {
+                        Node item = nodeList.item(i);
+                        String targetInArchive = item.getAttributes().getNamedItem(TARGET_IN_ARCHIVE).getNodeValue();
+                        Path fileName = Paths.get(targetInArchive).getFileName();
+                        locationTreeNode.add(new DefaultMutableTreeNode(fileName));
+                    }
+                } catch (SAXException e) {
+                    locationTreeNode.setStatus("failure to read file");
                 }
             }
 

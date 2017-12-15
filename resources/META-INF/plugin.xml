@@ -37,6 +37,10 @@
     <component>
       <implementation-class>net.pupunha.liberty.integration.view.toolwindow.applications.toolbar.application.ToolBarComponent</implementation-class>
     </component>
+    <component>
+      <implementation-class>net.pupunha.liberty.integration.view.toolwindow.applications.toolbar.application.ConfigurationComponent</implementation-class>
+    </component>
+
   </project-components>
 
 </idea-plugin>

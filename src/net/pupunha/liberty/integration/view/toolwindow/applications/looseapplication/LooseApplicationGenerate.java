@@ -24,6 +24,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
@@ -60,6 +61,9 @@ public class LooseApplicationGenerate {
     public static final String FILE = "file";
     public static final String TARGET_IN_ARCHIVE = "targetInArchive";
     public static final String SOURCE_ON_DISK = "sourceOnDisk";
+    public static final String TARGET = "/target";
+    public static final String WAR = ".war";
+    public static final String EAR = ".ear";
 
     private LooseApplicationParameter parameter;
     private Project project;
@@ -75,13 +79,16 @@ public class LooseApplicationGenerate {
     }
 
     public void insertText(String text) {
-        try {
-            StyledDocument doc = textPane.getStyledDocument();
-            doc.insertString(doc.getLength(), text.concat("\n"), null);
-            textPane.setCaretPosition(doc.getLength());
-        } catch (BadLocationException e) {
-            Messages.showMessageDialog(project, e.getMessage(), "Error", Messages.getErrorIcon());
-        }
+        SwingUtilities.invokeLater(() -> {
+            try {
+                StyledDocument doc = textPane.getStyledDocument();
+                System.out.println(String.format("[%s] - %s - %s", Thread.currentThread(), doc.getLength(), text));
+                doc.insertString(doc.getLength(), text.concat("\n"), null);
+                textPane.setCaretPosition(doc.getLength());
+            } catch (BadLocationException e) {
+                Messages.showMessageDialog(project, e.getMessage(), "Error", Messages.getErrorIcon());
+            }
+        });
     }
 
     public List<Path> listDependenciesInPackage(Path projectEAR, List<Path> listModulesInPackage) throws IOException, LibertyConfigurationException {
@@ -94,9 +101,9 @@ public class LooseApplicationGenerate {
             final int lastPeriodPos = fileEAR.lastIndexOf('.');
             String nameEARWithoutExtension = fileEAR.substring(0, lastPeriodPos);
 
-            Path folderEAR = Paths.get(projectEAR.toString(), "/target", nameEARWithoutExtension);
+            Path folderEAR = Paths.get(projectEAR.toString(), TARGET, nameEARWithoutExtension);
             if (folderEAR != null) {
-                DirectoryStream<Path> streamArchiveWAR = Files.newDirectoryStream(folderEAR, f -> f.toString().endsWith(".war"));
+                DirectoryStream<Path> streamArchiveWAR = Files.newDirectoryStream(folderEAR, f -> f.toString().endsWith(WAR));
                 for (Path entry : streamArchiveWAR) {
                     Pattern r = Pattern.compile(PATTERN_WAR);
                     Matcher m = r.matcher(entry.getFileName().toString());
@@ -111,9 +118,9 @@ public class LooseApplicationGenerate {
                                 .findFirst()
                                 .orElse(null);
                         String projectWARTarget = entry.getFileName().toString().substring(0, entry.getFileName().toString().lastIndexOf('.'));
-                        Path pathProjectTargetWAR = Paths.get(pathProjectWAR.toString(), "/target", projectWARTarget);
+                        Path pathProjectTargetWAR = Paths.get(pathProjectWAR.toString(), TARGET, projectWARTarget);
                         if (!Files.exists(pathProjectTargetWAR)) {
-                            pathProjectTargetWAR = Files.walk(Paths.get(pathProjectWAR.toString(), "/target"))
+                            pathProjectTargetWAR = Files.walk(Paths.get(pathProjectWAR.toString(), TARGET))
                                     .filter(p -> p.toString().endsWith(projectWarVersion))
                                     .findFirst()
                                     .orElse(null);
@@ -151,7 +158,7 @@ public class LooseApplicationGenerate {
         return dependenciesInPackage;
     }
 
-    public Path createLooseApplication(OutputStream outputStream) throws Exception {
+    public Path createLooseApplication(Boolean saveFile) throws Exception {
 
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -164,7 +171,7 @@ public class LooseApplicationGenerate {
             final int lastPeriodPos = fileEAR.lastIndexOf('.');
             String nameEARWithoutExtension = fileEAR.substring(0, lastPeriodPos);
 
-            Path folderEAR = Paths.get(parameter.getProjectEAR().toString(), "/target", nameEARWithoutExtension);
+            Path folderEAR = Paths.get(parameter.getProjectEAR().toString(), TARGET, nameEARWithoutExtension);
             if (folderEAR != null) {
 
                 Element archiveEAR = doc.createElement(ARCHIVE);
@@ -180,7 +187,7 @@ public class LooseApplicationGenerate {
                     if (textPane != null) insertText("Generate EAR DIR " + "/" + entry.getFileName().toString());
                 }
 
-                DirectoryStream<Path> streamFiles = Files.newDirectoryStream(folderEAR, f -> !f.toFile().isDirectory() && !f.toString().endsWith(".war"));
+                DirectoryStream<Path> streamFiles = Files.newDirectoryStream(folderEAR, f -> !f.toFile().isDirectory() && !f.toString().endsWith(WAR));
                 for (Path entry : streamFiles) {
                     Element dir = doc.createElement(FILE);
                     dir.setAttribute(TARGET_IN_ARCHIVE, "/" + entry.getFileName().toString());
@@ -189,7 +196,7 @@ public class LooseApplicationGenerate {
                     if (textPane != null) insertText("Generate EAR FILE " + "/" + entry.getFileName().toString());
                 }
 
-                DirectoryStream<Path> streamArchiveWAR = Files.newDirectoryStream(folderEAR, f -> f.toString().endsWith(".war"));
+                DirectoryStream<Path> streamArchiveWAR = Files.newDirectoryStream(folderEAR, f -> f.toString().endsWith(WAR));
                 for (Path entry : streamArchiveWAR) {
 
                     Element archiveWAR = doc.createElement(ARCHIVE);
@@ -214,9 +221,9 @@ public class LooseApplicationGenerate {
                                 .orElse(null);
 
                         Path pathProjectWithWebAppDirWAR = Paths.get(pathProjectWAR.toString(), "/src/main/webapp/WEB-INF");
-                        Path pathProjectTargetWAR = Paths.get(pathProjectWAR.toString(), "/target", projectWARTarget);
+                        Path pathProjectTargetWAR = Paths.get(pathProjectWAR.toString(), TARGET, projectWARTarget);
                         if (!Files.exists(pathProjectTargetWAR)) {
-                            pathProjectTargetWAR = Files.walk(Paths.get(pathProjectWAR.toString(), "/target"))
+                            pathProjectTargetWAR = Files.walk(Paths.get(pathProjectWAR.toString(), TARGET))
                                     .filter(p -> p.toString().endsWith(projectWarVersion))
                                     .findFirst()
                                     .orElse(null);
@@ -286,11 +293,17 @@ public class LooseApplicationGenerate {
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             DOMSource source = new DOMSource(doc);
 
+            OutputStream outputStream;
+            if (saveFile) {
+                outputStream = new FileOutputStream(pathFileLooseApplication.toFile());
+            } else {
+                outputStream = System.out;
+            }
             StreamResult result = new StreamResult(outputStream);
             transformer.transform(source, result);
             outputStream.close();
 
-            if (textPane != null) insertText("FINISH. Loose Application generated in " + pathFileLooseApplication.toString());
+            if (textPane != null) insertText("FINISH. Loose Application generated in: " + pathFileLooseApplication.toString());
             if (textPane != null) {
                 if (!listNotBuilt.isEmpty()) {
                     insertText("------------------------------------------------");
@@ -314,7 +327,7 @@ public class LooseApplicationGenerate {
     @Nullable
     public Path getPathFileEARGenerated() throws IOException {
         return Files.walk(parameter.getProjectEAR())
-                    .filter(p -> p.toString().endsWith(".ear"))
+                    .filter(p -> p.toString().endsWith(EAR))
                     .findFirst()
                     .orElse(null);
     }
@@ -322,7 +335,8 @@ public class LooseApplicationGenerate {
     public static void main(String args[]) throws IOException {
         LooseApplicationParameter parameter = new LooseApplicationParameter();
 //        Path projectEAR = Paths.get("C:\\devtools\\home\\a23418\\projects\\packages\\2017.11\\projects\\java8\\apps\\batch-module\\batch-module-ear");
-        Path projectEAR = Paths.get("C:\\devtools\\home\\a23418\\projects\\packages\\2017.11\\projects\\java8\\apps\\batch-module\\batch-module-ui-ear");
+//        Path projectEAR = Paths.get("C:\\devtools\\home\\a23418\\projects\\packages\\2017.11\\projects\\java8\\apps\\batch-module\\batch-module-ui-ear");
+        Path projectEAR = Paths.get("C:\\devtools\\home\\a23418\\projects\\packages\\2017.11\\projects\\java8\\apps\\pims-money-inout\\pims-money-inout-ear");
         parameter.setProjectEAR(projectEAR);
         List<Path> allPackProjectsStream = Files.walk(Paths.get(PACK_LOCAL))
                 .filter(p -> p.endsWith(MavenConstants.POM_XML))
@@ -332,7 +346,7 @@ public class LooseApplicationGenerate {
         parameter.setModules(allPackProjectsStream);
         LooseApplicationGenerate generate = new LooseApplicationGenerate(null, parameter, null);
         try {
-            generate.createLooseApplication(System.out);
+            generate.createLooseApplication(false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -373,6 +387,7 @@ public class LooseApplicationGenerate {
 
                         Element archiveJAR = doc.createElement(ARCHIVE);
                         archiveJAR.setAttribute(TARGET_IN_ARCHIVE, "/WEB-INF/lib/" + fileNameJar);
+
                         if (textPane != null) insertText("Generate WAR JAR " + "/WEB-INF/lib/" + fileNameJar);
 
                         Path pathProjectTargetClasses = Paths.get(pathProject.toString(), "/target/classes");
@@ -396,14 +411,17 @@ public class LooseApplicationGenerate {
                             fileJAR.setAttribute(TARGET_IN_ARCHIVE, "/WEB-INF/lib/" + fileNameJar);
                             fileJAR.setAttribute(SOURCE_ON_DISK, fullPath.toString().replace("\\","/"));
                             archiveWAR.appendChild(fileJAR);
-                            if (textPane != null) insertText("Generate WAR JAR " + "/WEB-INF/lib/" + fileNameJar);
+
+                            if (textPane != null) insertText("Generate WAR JAR /WEB-INF/lib/" + fileNameJar);
                         });
                     }
                 } else {
                     System.out.println("NO MATCH");
                 }
             }
-        } catch (IOException ex) {}
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
 

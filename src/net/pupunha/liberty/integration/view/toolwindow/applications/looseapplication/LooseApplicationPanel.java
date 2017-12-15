@@ -43,7 +43,7 @@ public class LooseApplicationPanel extends JPanel {
     private Project project;
 
     public LooseApplicationPanel(Project project) {
-        super(new MigLayout("", "", "[][][][]"));
+        super(new MigLayout("", "[][][]", "[][][][]"));
         this.project = project;
 
         this.add(new JLabel("Enterprise Application:"), "growx, wrap");
@@ -63,8 +63,6 @@ public class LooseApplicationPanel extends JPanel {
         this.add(new JBScrollPane(listProjectsRight), "sg a, grow, push, wrap");
 
         setEnableButtons(false);
-
-        this.setPreferredSize(new Dimension(500, 300));
 
         comboEnterpriseApplication.setModel(comboBoxModel);
         comboBoxModel.addElement(new ComboBoxItem(SELECT));
