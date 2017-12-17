@@ -4,6 +4,7 @@ public class MavenConstants {
 
     public static final String POM_XML = "pom.xml";
     public static final String JAR = "jar";
+    public static final String WAR = "war";
     public static final String EAR = "ear";
 
 }

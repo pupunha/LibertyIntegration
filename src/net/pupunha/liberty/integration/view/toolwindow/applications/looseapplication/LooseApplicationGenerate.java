@@ -6,6 +6,7 @@ import net.pupunha.liberty.integration.configuration.LibertyConfiguration;
 import net.pupunha.liberty.integration.configuration.LibertyConfigurationRepository;
 import net.pupunha.liberty.integration.constants.MavenConstants;
 import net.pupunha.liberty.integration.exception.LibertyConfigurationException;
+import net.pupunha.liberty.integration.util.ReadPom;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -53,8 +54,9 @@ public class LooseApplicationGenerate {
     public static final String CLASSES = "classes";
     public static final String LIB = "lib";
 
-    public static final String PATTERN_JAR = "^(.+?)-(\\d.*?)\\.jar$";
-    public static final String PATTERN_WAR = "^(.+?)-(\\d.*?)\\.war$";
+    public static final String PATTERN_JAR_WITH_VERSION = "^(.+?)-(\\d.*?)\\.jar$";
+    public static final String PATTERN_WAR_WITH_VERSION = "^(.+?)-(\\d.*?)\\.war$";
+    public static final String PATTERN_WAR_WITHOUT_VERSION = "^(.+?).war$";
 
     public static final String ARCHIVE = "archive";
     public static final String DIR = "dir";
@@ -105,7 +107,7 @@ public class LooseApplicationGenerate {
             if (folderEAR != null) {
                 DirectoryStream<Path> streamArchiveWAR = Files.newDirectoryStream(folderEAR, f -> f.toString().endsWith(WAR));
                 for (Path entry : streamArchiveWAR) {
-                    Pattern r = Pattern.compile(PATTERN_WAR);
+                    Pattern r = Pattern.compile(PATTERN_WAR_WITH_VERSION);
                     Matcher m = r.matcher(entry.getFileName().toString());
                     if (m.find()) {
                         String projectWarName = m.group(1);
@@ -131,7 +133,7 @@ public class LooseApplicationGenerate {
                                         DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(entryContentWebInfWAR.toString()));
                                         for (Path path : directoryStream) {
                                             String fileNameJar = path.getFileName().toString();
-                                            Pattern patternJar = Pattern.compile(PATTERN_JAR);
+                                            Pattern patternJar = Pattern.compile(PATTERN_JAR_WITH_VERSION);
                                             Matcher matcherJar = patternJar.matcher(fileNameJar);
                                             if (matcherJar.find()) {
                                                 String projectName = matcherJar.group(1);
@@ -200,24 +202,38 @@ public class LooseApplicationGenerate {
                     archiveEAR.appendChild(archiveWAR);
                     if (textPane != null) insertText("Generate Archive WAR");
 
-                    Pattern r = Pattern.compile(PATTERN_WAR);
+                    Pattern r = Pattern.compile(PATTERN_WAR_WITH_VERSION);
                     Matcher m = r.matcher(entry.getFileName().toString());
+                    if (!m.find()) {
+                        r = Pattern.compile(PATTERN_WAR_WITHOUT_VERSION);
+                        m = r.matcher(entry.getFileName().toString());
+                    }
+
                     if (m.find()) {
                         String projectWarName = m.group(1);
-                        String projectWarVersion = m.group(2);
+                        String projectWarVersion = null;
+                        if (m.groupCount() > 1) {
+                            projectWarVersion = m.group(2);
+                        }
                         String projectWARTarget = entry.getFileName().toString().substring(0, entry.getFileName().toString().lastIndexOf('.'));
 
                         /**TO POLICY-TOOL**/
-
                         Path pathProjectWAR = getPathProjectWAR(projectWarName);
-
                         Path pathProjectWithWebAppDirWAR = Paths.get(pathProjectWAR.toString(), "/src/main/webapp/WEB-INF");
                         Path pathProjectTargetWAR = Paths.get(pathProjectWAR.toString(), TARGET, projectWARTarget);
                         if (!Files.exists(pathProjectTargetWAR)) {
-                            pathProjectTargetWAR = Files.walk(Paths.get(pathProjectWAR.toString(), TARGET))
-                                    .filter(p -> p.toString().endsWith(projectWarVersion))
-                                    .findFirst()
-                                    .orElse(null);
+                            if (projectWarVersion != null) {
+                                final String version = projectWarVersion;
+                                pathProjectTargetWAR = Files.walk(Paths.get(pathProjectWAR.toString(), TARGET))
+                                        .filter(p -> p.toString().endsWith(version))
+                                        .findFirst()
+                                        .orElse(null);
+                            } else {
+                                pathProjectTargetWAR = Files.walk(Paths.get(pathProjectWAR.toString(), TARGET))
+                                        .filter(p -> p.getFileName().toString().startsWith(projectWarName) && Files.isDirectory(p))
+                                        .findFirst()
+                                        .orElse(null);
+                            }
                         }
                         Path pathProjectTargetClassesWAR = Paths.get(pathProjectWAR.toString(), "/target/classes");
 
@@ -310,8 +326,9 @@ public class LooseApplicationGenerate {
     @Nullable
     private Path getPathProjectWAR(String projectWarName) throws IOException {
         return Files.walk(parameter.getProjectEAR().getParent())
-                                    .filter(p -> p.toString().endsWith(projectWarName))
-                                    .filter(p -> !p.toString().contains("maven"))
+                                    .filter(p -> p.toString().endsWith(MavenConstants.POM_XML))
+                                    .filter(p -> ReadPom.getPackaging(p).equals(MavenConstants.WAR))
+                                    .map(Path::getParent)
                                     .distinct()
                                     .findFirst()
                                     .orElse(null);
@@ -356,15 +373,20 @@ public class LooseApplicationGenerate {
     public static String findRepositoryLocal() throws Exception {
         String home = System.getProperty("user.home");
         Path pathMavenSettings = Paths.get(home, "/.m2/settings.xml");
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(pathMavenSettings.toFile());
+        if (Files.exists(pathMavenSettings)) {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(pathMavenSettings.toFile());
 
-        XPath xPath = XPathFactory.newInstance().newXPath();
-        String expression = "//localRepository";
-        Node evaluate = (Node) xPath.compile(expression).evaluate(doc, XPathConstants.NODE);
-        String textContent = evaluate.getTextContent();
-        return textContent;
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            String expression = "//localRepository";
+            Node evaluate = (Node) xPath.compile(expression).evaluate(doc, XPathConstants.NODE);
+            String textContent = evaluate.getTextContent();
+            return textContent;
+        } else {
+            Path path = Paths.get(home, "/.m2/repository");
+            return path.toString();
+        }
     }
 
     private static boolean isDirEmpty(final Path directory) throws IOException {
@@ -378,7 +400,7 @@ public class LooseApplicationGenerate {
         try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(directoryLibraries))) {
             for (Path path : directoryStream) {
                 String fileNameJar = path.getFileName().toString();
-                Pattern r = Pattern.compile(PATTERN_JAR);
+                Pattern r = Pattern.compile(PATTERN_JAR_WITH_VERSION);
                 Matcher m = r.matcher(fileNameJar);
                 if (m.find()) {
                     String projectName = m.group(1);
