@@ -111,12 +111,8 @@ public class LooseApplicationGenerate {
                         String projectWarName = m.group(1);
                         String projectWarVersion = m.group(2);
 
-                        Path pathProjectWAR = Files.walk(parameter.getProjectEAR().getParent())
-                                .filter(p -> p.toString().endsWith(projectWarName))
-                                .filter(p -> !p.toString().contains("maven"))
-                                .distinct()
-                                .findFirst()
-                                .orElse(null);
+                        Path pathProjectWAR = getPathProjectWAR(projectWarName);
+
                         String projectWARTarget = entry.getFileName().toString().substring(0, entry.getFileName().toString().lastIndexOf('.'));
                         Path pathProjectTargetWAR = Paths.get(pathProjectWAR.toString(), TARGET, projectWARTarget);
                         if (!Files.exists(pathProjectTargetWAR)) {
@@ -213,12 +209,7 @@ public class LooseApplicationGenerate {
 
                         /**TO POLICY-TOOL**/
 
-                        Path pathProjectWAR = Files.walk(parameter.getProjectEAR().getParent())
-                                .filter(p -> p.toString().endsWith(projectWarName))
-                                .filter(p -> !p.toString().contains("maven"))
-                                .distinct()
-                                .findFirst()
-                                .orElse(null);
+                        Path pathProjectWAR = getPathProjectWAR(projectWarName);
 
                         Path pathProjectWithWebAppDirWAR = Paths.get(pathProjectWAR.toString(), "/src/main/webapp/WEB-INF");
                         Path pathProjectTargetWAR = Paths.get(pathProjectWAR.toString(), TARGET, projectWARTarget);
@@ -314,6 +305,16 @@ public class LooseApplicationGenerate {
             }
         }
         return pathFileEARGenerated;
+    }
+
+    @Nullable
+    private Path getPathProjectWAR(String projectWarName) throws IOException {
+        return Files.walk(parameter.getProjectEAR().getParent())
+                                    .filter(p -> p.toString().endsWith(projectWarName))
+                                    .filter(p -> !p.toString().contains("maven"))
+                                    .distinct()
+                                    .findFirst()
+                                    .orElse(null);
     }
 
     public Path getPathFileLooseApplication(Path absolutePathApps) throws IOException {

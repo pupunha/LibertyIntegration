@@ -11,6 +11,13 @@ public class GeneralConstants {
     public static final Icon ICON_APPLICATION = IconLoader.getIcon("/application-16.png");
     public static final Icon ICON_CLEAR_LOGS = IconLoader.getIcon("/trash-16.png");
     public static final Icon ICON_OPEN = IconLoader.getIcon("/openProject.png");
+    public static final Icon ICON_FOLDER = IconLoader.getIcon("/folder.png");
+    public static final Icon ICON_XML = IconLoader.getIcon("/xml.png");
+    public static final Icon ICON_LIBRARY = IconLoader.getIcon("/library.png");
+    public static final Icon ICON_DEPENDENCIES_FOLDER = IconLoader.getIcon("/ppLibFolder.png");
+    public static final Icon ICON_SETTINGS = IconLoader.getIcon("/settings.png");
+    public static final Icon ICON_TAG = IconLoader.getIcon("/tag.png");
+
 
     public static final String ERROR = "Error";
     public static final String INFORMATION = "Information";

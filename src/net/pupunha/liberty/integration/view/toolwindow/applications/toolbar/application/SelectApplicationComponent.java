@@ -26,7 +26,6 @@ public class SelectApplicationComponent implements ProjectComponent {
     }
 
     public void clearSelectApplication() {
-//        this.applications = null;
         this.selectApplication = new SelectApplication();
     }
 }

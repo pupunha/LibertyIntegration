@@ -69,6 +69,14 @@ public class LibertyConfiguration {
         return path;
     }
 
+    public Path getAbsolutePathDropins() throws PathNotFoundException {
+        Path path = Paths.get(getAbsolutePathServerName().toString(), DROPINS);
+        if(!Files.exists(path)) {
+            throw new PathNotFoundException("The file '" + path + " was not found");
+        }
+        return path;
+    }
+
     public Path getAbsolutePathLogs() throws PathNotFoundException {
         Path path = Paths.get(getAbsolutePathServerName().toString(), LOGS);
         if(!Files.exists(path)) {

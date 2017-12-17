@@ -24,6 +24,7 @@ public class LooseApplicationAction extends AnAction {
         try {
             LooseApplicationDialog dialog = new LooseApplicationDialog(project);
             dialog.setTitle("Create Loose Application EAR");
+            dialog.setSize(700, 500);
             dialog.show();
             if (dialog.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
                 LooseApplicationParameter parameter = dialog.getParameters();
