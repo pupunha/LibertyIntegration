@@ -8,6 +8,7 @@ import javax.swing.*;
 public class GeneralConstants {
 
     public static final Icon ICON_ROCKET = IconLoader.getIcon("/rocket-16.png");
+    public static final Icon ICON_ROCKET_BLUE = IconLoader.getIcon("/rocket-blue-16.png");
     public static final Icon ICON_APPLICATION = IconLoader.getIcon("/application-16.png");
     public static final Icon ICON_CLEAR_LOGS = IconLoader.getIcon("/trash-16.png");
     public static final Icon ICON_OPEN = IconLoader.getIcon("/openProject.png");

@@ -196,7 +196,7 @@ public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements
 
     private void loadServerXml(DefaultMutableTreeNode root, LibertyConfiguration libertyConfiguration) throws Exception {
         log.info("Create Root Tree Name...");
-        String serverXMLTreeNodeValue = String.format("%s [%s]", libertyConfiguration.getServerName(), SERVER_XML);
+        String serverXMLTreeNodeValue = String.format("%s [%s]", SERVER_XML, libertyConfiguration.getServerName());
         DefaultMutableTreeNode serverXMLTreeNode = new IconTreeNode(serverXMLTreeNodeValue, GeneralConstants.ICON_XML);
         root.add(serverXMLTreeNode);
 
