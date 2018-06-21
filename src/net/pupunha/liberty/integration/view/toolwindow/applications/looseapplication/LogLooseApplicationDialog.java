@@ -69,7 +69,10 @@ public class LogLooseApplicationDialog extends DialogWrapper {
                     enterpriseApplication.setLocation(earName);
                     manipulationLibertyServer.addApplication(enterpriseApplication);
                 }
-
+                parameter.setProjectEAR(null);
+                parameter.setModules(null);
+                parameter.setModulesInPackage(null);
+                parameter = null;
                 ToolBarComponent.getManager(project).executeRefresh();
 
                 myOKAction.setEnabled(true);

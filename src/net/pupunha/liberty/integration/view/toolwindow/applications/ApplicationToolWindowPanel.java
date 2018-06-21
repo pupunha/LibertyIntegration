@@ -171,6 +171,7 @@ public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements
                     treeNode.setLocation(path);
                     appsTreeNode.add(treeNode);
                 }
+                directoryStream.close();
             } catch (IOException ex) {}
         } catch (PathNotFoundException e) {
             DefaultMutableTreeNode appsTreeNode = new IconTreeNode(String.format("apps [%s]", e.getMessage()));
@@ -187,6 +188,7 @@ public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements
                 for (Path path : directoryStream) {
                     appsTreeNode.add(new IconTreeNode(path.getFileName(), IconTreeNode.Type.DROPINS_FILE));
                 }
+                directoryStream.close();
             } catch (IOException ex) {}
         } catch (PathNotFoundException e) {
             DefaultMutableTreeNode appsTreeNode = new IconTreeNode(String.format("dropins [%s]", e.getMessage()));
@@ -350,6 +352,7 @@ public class ApplicationToolWindowPanel extends SimpleToolWindowPanel implements
                                     .peek(this::insertText)
                                     .forEach(File::delete);
                         }
+                        directoryStream.close();
                     }
                 }
             } catch (LibertyConfigurationException | IOException | PathNotFoundException e) {

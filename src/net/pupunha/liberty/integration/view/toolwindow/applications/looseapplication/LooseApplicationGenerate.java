@@ -57,6 +57,7 @@ public class LooseApplicationGenerate {
     public static final String PATTERN_JAR_WITH_VERSION = "^(.+?)-(\\d.*?)\\.jar$";
     public static final String PATTERN_WAR_WITH_VERSION = "^(.+?)-(\\d.*?)\\.war$";
     public static final String PATTERN_WAR_WITHOUT_VERSION = "^(.+?).war$";
+    public static final String PATTERN_WAR_VERSION = "^(.+?)-(\\d.*?)\\.war|(.+?).war$";
 
     public static final String ARCHIVE = "archive";
     public static final String DIR = "dir";
@@ -93,7 +94,7 @@ public class LooseApplicationGenerate {
         });
     }
 
-    public List<Path> listDependenciesInPackage(Path projectEAR, List<Path> listModulesInPackage) throws IOException, LibertyConfigurationException {
+    public List<Path> listDependenciesInPackage(Path projectEAR, List<Path> listModulesInPackage) throws IOException {
         List<Path> dependenciesInPackage = new ArrayList<>();
 
         Path pathFileEARGenerated = getPathFileEARGenerated();
@@ -145,12 +146,16 @@ public class LooseApplicationGenerate {
                                                 }
                                             }
                                         }
+                                        directoryStream.close();
                                     }
                                 }
+                                streamContentWebInfWAR.close();
                             }
                         }
+                        streamContentWAR.close();
                     }
                 }
+                streamArchiveWAR.close();
             }
         }
         return dependenciesInPackage;
@@ -184,6 +189,7 @@ public class LooseApplicationGenerate {
                     archiveEAR.appendChild(dir);
                     if (textPane != null) insertText("Generate EAR DIR " + "/" + entry.getFileName().toString());
                 }
+                streamDirs.close();
 
                 DirectoryStream<Path> streamFiles = Files.newDirectoryStream(folderEAR, f -> !f.toFile().isDirectory() && !f.toString().endsWith(WAR));
                 for (Path entry : streamFiles) {
@@ -193,6 +199,7 @@ public class LooseApplicationGenerate {
                     archiveEAR.appendChild(dir);
                     if (textPane != null) insertText("Generate EAR FILE " + "/" + entry.getFileName().toString());
                 }
+                streamFiles.close();
 
                 DirectoryStream<Path> streamArchiveWAR = Files.newDirectoryStream(folderEAR, f -> f.toString().endsWith(WAR));
                 for (Path entry : streamArchiveWAR) {
@@ -202,14 +209,16 @@ public class LooseApplicationGenerate {
                     archiveEAR.appendChild(archiveWAR);
                     if (textPane != null) insertText("Generate Archive WAR");
 
-                    Pattern r = Pattern.compile(PATTERN_WAR_WITH_VERSION);
+                    Pattern r = Pattern.compile(PATTERN_WAR_VERSION);
                     Matcher m = r.matcher(entry.getFileName().toString());
-                    if (!m.find()) {
-                        r = Pattern.compile(PATTERN_WAR_WITHOUT_VERSION);
-                        m = r.matcher(entry.getFileName().toString());
-                    }
 
+//                    boolean valid = m.find();
                     if (m.find()) {
+//                        r = Pattern.compile(PATTERN_WAR_WITHOUT_VERSION);
+//                        m = r.matcher(entry.getFileName().toString());
+//                    }
+
+//                    if (m.find()) {
                         String projectWarName = m.group(1);
                         String projectWarVersion = null;
                         if (m.groupCount() > 1) {
@@ -219,6 +228,7 @@ public class LooseApplicationGenerate {
 
                         /**TO POLICY-TOOL**/
                         Path pathProjectWAR = getPathProjectWAR(projectWarName);
+                        Path pathProjectWithWebAppWAR = Paths.get(pathProjectWAR.toString(), "/src/main/webapp");
                         Path pathProjectWithWebAppDirWAR = Paths.get(pathProjectWAR.toString(), "/src/main/webapp/WEB-INF");
                         Path pathProjectTargetWAR = Paths.get(pathProjectWAR.toString(), TARGET, projectWARTarget);
                         if (!Files.exists(pathProjectTargetWAR)) {
@@ -269,6 +279,7 @@ public class LooseApplicationGenerate {
                                         }
                                     }
                                 }
+                                streamContentWebInfWAR.close();
 
                                 DirectoryStream<Path> streamContentWebInfFileWAR = Files.newDirectoryStream(entryContentWAR, f -> !f.toFile().isDirectory());
                                 for (Path entryContentWebInfFileWAR : streamContentWebInfFileWAR) {
@@ -283,10 +294,26 @@ public class LooseApplicationGenerate {
                                         archiveWAR.appendChild(file);
                                     }
                                 }
+                                streamContentWebInfFileWAR.close();
+                            } else {
+                                DirectoryStream<Path> streamContentWebAppWAR = Files.newDirectoryStream(pathProjectWithWebAppWAR, f -> f.toFile().isDirectory());
+                                for (Path path : streamContentWebAppWAR) {
+                                    if (entryContentWAR.getFileName().toString().equals(path.getFileName().toString())) {
+                                        Element dir = doc.createElement(DIR);
+                                        dir.setAttribute(TARGET_IN_ARCHIVE, "/" + entryContentWAR.getFileName().toString());
+                                        dir.setAttribute(SOURCE_ON_DISK, path.toString().replace("\\", "/"));
+                                        archiveWAR.appendChild(dir);
+                                        if (textPane != null) insertText("Generate WAR DIR " + "/" + entryContentWAR.toString());
+                                        break;
+                                    }
+                                }
+                                streamContentWebAppWAR.close();
                             }
                         }
+                        streamContentWAR.close();
                     }
                 }
+                streamArchiveWAR.close();
             }
 
             LibertyConfigurationRepository repository = new LibertyConfigurationRepository();
@@ -326,12 +353,14 @@ public class LooseApplicationGenerate {
     @Nullable
     private Path getPathProjectWAR(String projectWarName) throws IOException {
         return Files.walk(parameter.getProjectEAR().getParent())
-                                    .filter(p -> p.toString().endsWith(MavenConstants.POM_XML))
-                                    .filter(p -> ReadPom.getPackaging(p).equals(MavenConstants.WAR))
-                                    .map(Path::getParent)
-                                    .distinct()
-                                    .findFirst()
-                                    .orElse(null);
+                .filter(p -> p.toString().endsWith(MavenConstants.POM_XML))
+                .filter(p -> !p.toString().contains("maven"))
+                .filter(p -> ReadPom.getPackaging(p).equals(MavenConstants.WAR))
+                .map(Path::getParent)
+                .filter(p -> p.getFileName().toString().equals(projectWarName))
+                .distinct()
+                .findFirst()
+                .orElse(null);
     }
 
     public Path getPathFileLooseApplication(Path absolutePathApps) throws IOException {
@@ -354,7 +383,9 @@ public class LooseApplicationGenerate {
         LooseApplicationParameter parameter = new LooseApplicationParameter();
 //        Path projectEAR = Paths.get("C:\\devtools\\home\\a23418\\projects\\packages\\2017.11\\projects\\java8\\apps\\batch-module\\batch-module-ear");
 //        Path projectEAR = Paths.get("C:\\devtools\\home\\a23418\\projects\\packages\\2017.11\\projects\\java8\\apps\\batch-module\\batch-module-ui-ear");
-        Path projectEAR = Paths.get("C:\\devtools\\home\\a23418\\projects\\packages\\2017.11\\projects\\java8\\apps\\pims-money-inout\\pims-money-inout-ear");
+//        Path projectEAR = Paths.get("C:\\devtools\\home\\a23418\\projects\\packages\\2017.11\\projects\\java8\\apps\\pims-money-inout\\pims-money-inout-ear");
+        Path projectEAR = Paths.get("C:\\devtools\\home\\a23418\\projects\\packages\\2017.11\\projects\\java8\\apps\\policy-tool\\policytool-ear");
+
         parameter.setProjectEAR(projectEAR);
         List<Path> allPackProjectsStream = Files.walk(Paths.get(PACK_LOCAL))
                 .filter(p -> p.endsWith(MavenConstants.POM_XML))
@@ -442,6 +473,7 @@ public class LooseApplicationGenerate {
                     System.out.println("NO MATCH");
                 }
             }
+            directoryStream.close();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
